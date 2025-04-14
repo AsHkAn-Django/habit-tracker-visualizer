@@ -16,7 +16,7 @@
             {% for habit in habits %}
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="card shadow-sm {% if habit.is_complete %}bg-success text-white{% else %}bg-light{% endif %}">
-                        <div class="card-body">
+                        <div class="card-body text-center">
                             <h5 class="card-title">
                                 <a href="{% url 'habit_detail' habit.pk %}" class="text-decoration-none {% if habit.is_complete %}text-white{% else %}text-dark{% endif %}">
                                     <i class="bi bi-heart-fill"></i> {{ habit.name }}
@@ -33,7 +33,10 @@
                                 <small class="text-muted">Click to view details</small>
                             </p>
 
-                            <div class="d-grid gap-2">
+                            <div class="d-grid gap-2 px-5 mx-4">
+                                <a href="{% url 'habit_detail' habit.pk %}" class="btn btn-outline-success">
+                                    <i class="bi bi-check-circle"></i> See Detail
+                                </a>
                                 <a href="{% url 'habit_complete' habit.pk %}" class="btn btn-outline-info">
                                     <i class="bi bi-check-circle"></i> Mark as Complete
                                 </a>

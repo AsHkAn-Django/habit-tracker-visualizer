@@ -5,6 +5,7 @@ from .models import Habit, HabitCompletion
 from .forms import HabitForm
 from django.utils import timezone
 from datetime import timedelta
+import json
 
 
 # Create your views here.
@@ -58,8 +59,16 @@ def habit_detail_view(request, pk):
     completed_habits = HabitCompletion.objects.filter(habit=habit)
 
     last_seven_days = timezone.now() - timedelta(days=7)
-
     recent_completion = completed_habits.filter(completed_date__gte=last_seven_days)
+    
+    every_day_completion = []
+    last_seven_days = []
+    for day in range(6, -1, -1):
+        date = timezone.now().date() - timedelta(days=day)
+        last_seven_days.append(date.strftime('%d %b'))
+        that_day_completion = completed_habits.filter(completed_date__date=date).count()
+        every_day_completion.append(that_day_completion)
+    
     counted_habits = recent_completion.count()
     if habit.target:
         percentage = int((counted_habits / habit.target) * 100)
@@ -70,5 +79,7 @@ def habit_detail_view(request, pk):
         'habit': habit,
         'completed_habits': completed_habits,
         'percentage': percentage,
+        'dates': json.dumps(last_seven_days),
+        'data': json.dumps(every_day_completion),     
     }
     return render(request, 'myApp/habit_detail.html', context)
