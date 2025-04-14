@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4 text-primary">Habit Tracker</h1>
+
+    <div class="text-center mb-4">
+        <a href="{% url 'habit_new' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Add a New Habit
+        </a>
+    </div>
+
+    {% if habits %}
+        <h2 class="text-center mb-4 text-dark">List of Your Habits</h2>
+        <div class="row">
+            {% for habit in habits %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card shadow-sm {% if habit.is_complete %}bg-success text-white{% else %}bg-light{% endif %}">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{% url 'habit_detail' habit.pk %}" class="text-decoration-none {% if habit.is_complete %}text-white{% else %}text-dark{% endif %}">
+                                    <i class="bi bi-heart-fill"></i> {{ habit.name }}
+                                </a>
+                            </h5>
+                            <p class="card-text">
+                                {% if habit.is_complete %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Incomplete</span>
+                                {% endif %}
+                            </p>
+                            <p class="card-text">
+                                <small class="text-muted">Click to view details</small>
+                            </p>
+
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'habit_complete' habit.pk %}" class="btn btn-outline-info">
+                                    <i class="bi bi-check-circle"></i> Mark as Complete
+                                </a>
+                                <a href="{% url 'habit_edit' habit.pk %}" class="btn btn-outline-warning">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                                <a href="{% url 'habit_delete' habit.pk %}" class="btn btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            <i class="bi bi-info-circle"></i> No habits yet. Start by adding a new one!
+        </div>
+    {% endif %}
+</div>
+{% endblock content %}

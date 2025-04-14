@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Edit Habit</h2>
+
+    <form action="" method="post">
+        {% csrf_token %}
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="mb-3">
+                    {{ form.as_p }}
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">Update Habit</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock content %}
