@@ -4,11 +4,10 @@
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-8 offset-md-2">
-            <h2 class="text-center mb-4">Habit Progress - {{ habit.name }}</h2>
 
-            <div class="mb-5">
-                <canvas id="myChart"></canvas>
-            </div>
+            <h1 class="text-center my-5">Click <a href="{% url 'chart_report' habit.pk %}">here</a> for checking the charts</h2>
+
+            <h2 class="text-center mb-5">Progress for - {{ habit.name }}</h2>
 
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-primary text-white">
@@ -45,28 +44,6 @@
         </div>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const ctx = document.getElementById('myChart');
-  
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: {{ dates|safe }},
-        datasets: [{
-          label: '# of Votes',
-          data: {{ data|safe }},
-          borderWidth: 1
-        }]
-      },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true
-          }
-        }
-      }
-    });
-</script>
+
 
 {% endblock content %}
