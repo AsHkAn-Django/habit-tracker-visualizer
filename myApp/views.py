@@ -78,6 +78,7 @@ def habit_detail_view(request, pk):
 
 
 def chart_report(request, pk):
+    """Get the daily, weekly and monthly data for the charts."""
     considered_days = 120
     considered_weeks = 17
     considered_months = 4
@@ -101,6 +102,7 @@ def chart_report(request, pk):
 
 
 def get_daily_report(habits, days):
+    """Prepare counts, and dates for daily chart."""
     # start and end dates 
     start_date = (timezone.now() - timedelta(days=days)).date()
     end_date = timezone.now().date()
@@ -133,6 +135,8 @@ def get_daily_report(habits, days):
     return all_dates, all_counts
 
 def get_weekly_report(habits, weeks):
+    """Prepare counts, and dates for weekly chart."""
+
     # assumed considered_weeks is the number of weeks you want to look back
     start_date = (timezone.now() - timedelta(weeks=weeks)).date()
 
@@ -158,7 +162,6 @@ def get_weekly_report(habits, weeks):
     counts_list = []
     
     # Start from the truncated start date (make sure it is aligned to week boundaries if needed)
-    # For simplicity, this example uses 7-day intervals.
     current_week = start_date
     while current_week <= timezone.now().date():
         week_str = current_week.strftime('%Y-%m-%d')
@@ -170,6 +173,8 @@ def get_weekly_report(habits, weeks):
 
 
 def get_monthly_report(habits, months):
+    """Prepare counts, and dates for monthly chart."""
+
     # Start date (N months ago)
     start_date = (timezone.now() - relativedelta(months=months)).date()
     end_date = timezone.now().date()
@@ -199,6 +204,5 @@ def get_monthly_report(habits, months):
         months_list.append(month_str)
         counts_list.append(tasks_dict.get(month_str, 0))
         current += relativedelta(months=1)
-
-    print(counts_list)
+        
     return months_list, counts_list
