@@ -34,8 +34,11 @@
                             </p>
 
                             <div class="d-grid gap-2 px-5 mx-4">
-                                <a href="{% url 'habit_detail' habit.pk %}" class="btn btn-outline-success">
-                                    <i class="bi bi-check-circle"></i> See Detail
+                                <a href="{% url 'chart_report' habit.pk %}" class="btn btn-outline-success">
+                                    <i class="bi bi-check-circle"></i> Charts
+                                </a>
+                                <a href="{% url 'habit_detail' habit.pk %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-check-circle"></i> Details
                                 </a>
                                 <a href="{% url 'habit_complete' habit.pk %}" class="btn btn-outline-info">
                                     <i class="bi bi-check-circle"></i> Mark as Complete

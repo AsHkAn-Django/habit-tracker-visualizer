@@ -5,7 +5,8 @@ from .models import Habit, HabitCompletion
 from .forms import HabitForm
 from django.utils import timezone
 from datetime import timedelta
-from django.db.models.functions import TruncDay, TruncWeek
+from django.db.models.functions import TruncDay, TruncWeek, TruncMonth
+from dateutil.relativedelta import relativedelta
 from django.db.models import Count
 import json
 
@@ -79,19 +80,21 @@ def habit_detail_view(request, pk):
 def chart_report(request, pk):
     considered_days = 120
     considered_weeks = 17
-    considered_months = 105
+    considered_months = 4
     habit = get_object_or_404(Habit, pk=pk)
     completed_habits = HabitCompletion.objects.filter(habit=habit)
     daily_dates, daily_counts = get_daily_report(completed_habits, considered_days)
     weekly_dates, weekly_counts = get_weekly_report(completed_habits, considered_weeks)
-
+    monthly_dates, monthly_counts = get_monthly_report(completed_habits, considered_months)
+    
     context = {
         'habit': habit,
         'daily_dates': json.dumps(daily_dates),
         'daily_counts': json.dumps(daily_counts),     
         'weekly_dates': json.dumps(weekly_dates),     
         'weekly_counts': json.dumps(weekly_counts),     
-
+        'monthly_dates': json.dumps(monthly_dates),
+        'monthly_counts': json.dumps(monthly_counts),
     }
     return render(request, 'myApp/chart_report.html', context)
 
@@ -163,5 +166,39 @@ def get_weekly_report(habits, weeks):
         counts_list.append(tasks_dict.get(week_str, 0))
         current_week += timedelta(weeks=1)
     
-    print(counts_list)
     return weeks_list, counts_list
+
+
+def get_monthly_report(habits, months):
+    # Start date (N months ago)
+    start_date = (timezone.now() - relativedelta(months=months)).date()
+    end_date = timezone.now().date()
+
+    # Query completions grouped by month
+    monthly_tasks_qs = (
+        habits.filter(completed_date__date__gte=start_date)
+        .annotate(month=TruncMonth('completed_date'))
+        .values('month')
+        .annotate(task_count=Count('id'))
+        .order_by('month')
+    )
+
+    # Dict of month: count
+    tasks_dict = {
+        entry['month'].strftime('%Y-%m'): entry['task_count']
+        for entry in monthly_tasks_qs
+    }
+
+    # Generate list of months and fill counts
+    months_list = []
+    counts_list = []
+
+    current = start_date.replace(day=1)
+    while current <= end_date:
+        month_str = current.strftime('%Y-%m')
+        months_list.append(month_str)
+        counts_list.append(tasks_dict.get(month_str, 0))
+        current += relativedelta(months=1)
+
+    print(counts_list)
+    return months_list, counts_list

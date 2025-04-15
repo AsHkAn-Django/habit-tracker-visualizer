@@ -66,5 +66,26 @@
             }
         }
     });
+
+    // Monthly Chart
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    const monthlyChart = new Chart(monthlyCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ monthly_dates|safe }},
+            datasets: [{
+                label: 'Weekly Completions',
+                data: {{ monthly_counts|safe }},
+                backgroundColor: 'rgba(75, 192, 75, 0.5)',
+                borderColor: 'rgba(75, 192, 75, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
 </script>
 {% endblock %}
