@@ -109,14 +109,19 @@ def get_daily_report(habits, days):
     
     # Aggregate completions per day from the database
     daily_tasks_qs = (
+        # select the habits that are greater than start_date
         habits.filter(completed_date__date__gte=start_date)
+        # create a new filed name 'day' and then attach the completed_date to it
         .annotate(day=TruncDay('completed_date'))
+        # group all the habits in that day
         .values('day')
+        # count the number of ids in that group and add a field name task_count and attach that number to it
         .annotate(task_count=Count('id'))
+        # order them by day(the field that we just made)
         .order_by('day')
     )
     
-    # Create a dictionary mapping date (as a string) to its task count
+    # Create a dictionary (1999-01-01: 5)
     tasks_dict = {
         entry['day'].strftime('%Y-%m-%d'): entry['task_count'] for entry in daily_tasks_qs
     }
@@ -126,13 +131,17 @@ def get_daily_report(habits, days):
     all_counts = []
     current_date = start_date
     while current_date <= end_date:
+        # Reformat today's date to the same format that we have in our tasks_dict dictionairy
         date_str = current_date.strftime('%Y-%m-%d')
+        # now add them to the list of dates
         all_dates.append(date_str)
-        # If the day is missing in tasks_dict, default to 0
+        # Add the number of tasks to the all_counts and iff the day is missing in tasks_dict, default to 0
         all_counts.append(tasks_dict.get(date_str, 0))
+        # go to next day
         current_date += timedelta(days=1)
     
     return all_dates, all_counts
+
 
 def get_weekly_report(habits, weeks):
     """Prepare counts, and dates for weekly chart."""
