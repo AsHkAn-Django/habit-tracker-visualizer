@@ -4,6 +4,9 @@ from django.views.generic import TemplateView, ListView, CreateView, UpdateView,
 from django.utils import timezone
 from django.db.models import Count
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from .models import Habit, HabitCompletion
 from .forms import HabitForm
@@ -13,15 +16,18 @@ from dateutil.relativedelta import relativedelta
 import json
 
 
-# Create your views here.
+
 class IndexView(TemplateView):
     template_name = 'myApp/index.html'
 
 
-class HabitListView(ListView):
-    model = Habit
+class HabitListView(LoginRequiredMixin, ListView):
     context_object_name = 'habits'
     template_name = 'myApp/habit_list.html'
+    
+    def get_queryset(self):
+        queryset = Habit.objects.filter(user=self.request.user)
+        return queryset
 
 
 class HabitCreateView(CreateView):
@@ -29,39 +35,60 @@ class HabitCreateView(CreateView):
     form_class = HabitForm
     template_name = 'myApp/habit_new.html'
     success_url = 'habit_list'
+    
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
 
 
-class HabitUpdateView(UpdateView):
+class HabitUpdateView(UserPassesTestMixin, LoginRequiredMixin, UpdateView):
     model = Habit
     template_name = 'myApp/habit_edit.html'
     form_class = HabitForm
 
+    def test_func(self):
+        obj = self.get_object()
+        return obj.user == self.request.user
 
-class HabitDeleteView(DeleteView):
+
+class HabitDeleteView(UserPassesTestMixin, LoginRequiredMixin, DeleteView):
     model = Habit
     template_name = 'myApp/habit_delete.html'
-    success_url = reverse_lazy('habit_list')
+    success_url = reverse_lazy('myApp:habit_list')
 
+    def test_func(self):
+        obj = self.get_object()
+        return obj.user == self.request.user
+    
+    
 
+@login_required
 def complete_habit(request, pk):
     """Checks if the habit is completed or not."""
     habit = get_object_or_404(Habit, pk=pk)
+    if habit.user != request.user:
+        messages.error(request, 'You cant have access to this page.')
+        return redirect('myApp:home')
+    
     if habit.is_complete:
         habit.is_complete = False
     else:
         habit.is_complete = True
-        habit_completed = HabitCompletion(
-            habit=habit
-        )
-        habit_completed.save()
+        HabitCompletion.objects.create(habit=habit, user=request.user)
     habit.save()
-    return redirect('habit_list')
+    return redirect('myApp:habit_list')
 
 
+
+@login_required
 def habit_detail_view(request, pk):
     """ Get the list of the list of the dates and completion task for a specific period."""
-    considered_days = 5
     habit = get_object_or_404(Habit, pk=pk)
+    if habit.user != request.user:
+        messages.error(request, 'You cant have access to this page.')
+        return redirect('myApp:home')
+    
+    considered_days = 5
     completed_habits = HabitCompletion.objects.filter(habit=habit)
     last_seven_days = timezone.now() - timedelta(days=considered_days)
     recent_completion = completed_habits.filter(completed_date__gte=last_seven_days)
@@ -79,12 +106,17 @@ def habit_detail_view(request, pk):
     return render(request, 'myApp/habit_detail.html', context)
 
 
+@login_required
 def chart_report(request, pk):
     """Get the daily, weekly and monthly data for the charts."""
+    habit = get_object_or_404(Habit, pk=pk)
+    if habit.user != request.user:
+        messages.error(request, 'You cant have access to this page.')
+        return redirect('myApp:home')
+    
     considered_days = 120
     considered_weeks = 17
     considered_months = 4
-    habit = get_object_or_404(Habit, pk=pk)
     completed_habits = HabitCompletion.objects.filter(habit=habit)
     daily_dates, daily_counts = get_daily_report(completed_habits, considered_days)
     weekly_dates, weekly_counts = get_weekly_report(completed_habits, considered_weeks)
@@ -181,6 +213,7 @@ def get_weekly_report(habits, weeks):
         current_week += timedelta(weeks=1)
     
     return weeks_list, counts_list
+
 
 
 def get_monthly_report(habits, months):
