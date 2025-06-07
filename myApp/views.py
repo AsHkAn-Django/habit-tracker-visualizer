@@ -1,13 +1,15 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView
+from django.utils import timezone
+from django.db.models import Count
+from django.db.models.functions import TruncDay, TruncWeek, TruncMonth
+
 from .models import Habit, HabitCompletion
 from .forms import HabitForm
-from django.utils import timezone
+
 from datetime import timedelta
-from django.db.models.functions import TruncDay, TruncWeek, TruncMonth
 from dateutil.relativedelta import relativedelta
-from django.db.models import Count
 import json
 
 
