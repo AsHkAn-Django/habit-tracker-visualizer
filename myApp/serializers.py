@@ -10,7 +10,8 @@ class HabitSerializer(serializers.ModelSerializer):
         
     
 class HabitCompletionSerializer(serializers.ModelSerializer):
+    habit = HabitSerializer(read_only=True)
     class Meta: 
         model = HabitCompletion
-        fields = ('id', 'habit', 'completed_date',)
+        fields = ('id', 'completed_date', 'habit',)
         
