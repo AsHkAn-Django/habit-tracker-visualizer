@@ -3,6 +3,8 @@ from .views import (IndexView, HabitListView, HabitCreateView,
                     HabitUpdateView, HabitDeleteView, complete_habit,
                     habit_detail_view, chart_report)
 
+app_name = 'myApp'
+
 urlpatterns = [
     path('habit/<int:pk>/detail', habit_detail_view, name='habit_detail'),
     path('habit/<int:pk>/chart-report', chart_report, name='chart_report'),    

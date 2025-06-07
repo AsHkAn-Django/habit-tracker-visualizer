@@ -1,15 +1,17 @@
 from django.db import models
 from django.shortcuts import reverse
 from django.utils import timezone
+from django.conf import settings
 
 
-# Create your models here.
+
 class Habit(models.Model):
     """A class for creating a new habit"""
     name = models.CharField(max_length=260)
     target = models.IntegerField()
     is_complete = models.BooleanField(default=False)
-    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+        
     def __str__(self):
         return self.name
 
@@ -18,8 +20,9 @@ class Habit(models.Model):
 
 
 class HabitCompletion(models.Model):
-    habit = models.ForeignKey(Habit, on_delete=models.CASCADE)
+    habit = models.ForeignKey(Habit, on_delete=models.CASCADE, related_name='habits')
     completed_date = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_habits')
 
     def __str__(self):
         local_time = timezone.localtime(self.completed_date)
